@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - OPD</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Hospital Management System - Outpatient Department (OPD)</h1>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('receptionist')">Receptionist Portal</button>
+        <button class="tab-btn" onclick="switchTab('doctor')">Doctor Portal</button>
+        <button class="tab-btn" onclick="switchTab('billing')">Billing & Payment</button>
+        <button class="tab-btn" onclick="switchTab('reports')">Reports & Analytics</button>
+    </nav>
+
+    <main class="content">
+        <div id="alert-box" class="alert"></div>
+
+        <section id="receptionist" class="portal-section active">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Register New Patient</h2>
+                    <form id="patient-form" onsubmit="registerPatient(event)">
+                        <div class="form-group">
+                            <label for="p-name">Full Name</label>
+                            <input type="text" id="p-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="p-gender">Gender</label>
+                            <select id="p-gender" class="form-control" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="p-dob">Date of Birth</label>
+                            <input type="date" id="p-dob" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="p-phone">Phone</label>
+                            <input type="tel" id="p-phone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="p-email">Email</label>
+                            <input type="email" id="p-email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="p-blood">Blood Group</label>
+                            <select id="p-blood" class="form-control" required>
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="p-address">Address</label>
+                            <textarea id="p-address" class="form-control" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-block">Register Patient</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Book Appointment</h2>
+                    <form id="appointment-form" onsubmit="bookAppointment(event)">
+                        <div class="form-group">
+                            <label for="appt-patient">Select Patient</label>
+                            <select id="appt-patient" class="form-control" required>
+                                <option value="">Loading patients...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appt-doctor">Select Doctor</label>
+                            <select id="appt-doctor" class="form-control" required>
+                                <option value="">Loading doctors...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appt-date">Appointment Date</label>
+                            <input type="date" id="appt-date" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-block">Book Appointment</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="doctor" class="portal-section">
+            <div class="card">
+                <h2>Pending Appointments & Consultation</h2>
+                <div class="form-group">
+                    <label for="doctor-appt-select">Select Pending Appointment</label>
+                    <select id="doctor-appt-select" class="form-control" onchange="loadAppointmentDetails()">
+                        <option value="">Select Appointment</option>
+                    </select>
+                </div>
+
+                <form id="consultation-form" onsubmit="recordConsultation(event)" style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label for="consult-diagnosis">Diagnosis</label>
+                        <textarea id="consult-diagnosis" class="form-control" required placeholder="Enter medical diagnosis"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="consult-notes">Clinical Notes</label>
+                        <textarea id="consult-notes" class="form-control" placeholder="Enter consultation notes, prescription, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="consult-followup">Follow-up Date</label>
+                        <input type="date" id="consult-followup" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Consultation Fee</label>
+                        <input type="text" id="consult-fee-display" class="form-control" readonly placeholder="Select appointment to view fee">
+                    </div>
+                    <button type="submit" class="btn btn-block">Complete Consultation & Generate Bill</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="billing" class="portal-section">
+            <div class="card">
+                <h2>Billing & Payment Processing</h2>
+                <div class="form-group">
+                    <label for="bill-select">Select Pending / Partial Bill</label>
+                    <select id="bill-select" class="form-control" onchange="loadBillDetails()">
+                        <option value="">Select Pending Bill</option>
+                    </select>
+                </div>
+
+                <form id="payment-form" onsubmit="processPayment(event)" style="margin-top: 1.5rem;">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Total Bill Amount (₹)</label>
+                            <input type="text" id="bill-total" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Already Paid (₹)</label>
+                            <input type="text" id="bill-paid" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Balance Due (₹)</label>
+                        <input type="text" id="bill-due" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-amount">Payment Amount (₹)</label>
+                        <input type="number" step="0.01" id="pay-amount" class="form-control" required placeholder="Enter amount to pay">
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-mode">Payment Mode</label>
+                        <select id="pay-mode" class="form-control" required>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-block">Record Payment & Update Status</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="reports" class="portal-section">
+            <div class="card">
+                <h2>Daily Appointments Summary</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Appointments</th>
+                                <th>Completed</th>
+                                <th>Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-daily-appts"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Doctor-wise Patient Count</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Doctor Name</th>
+                                <th>Specialization</th>
+                                <th>Total Patients Consulted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-doctor-patients"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Pending Bills Report</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bill ID</th>
+                                <th>Patient Name</th>
+                                <th>Total Amount</th>
+                                <th>Paid Amount</th>
+                                <th>Balance Due</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-pending-bills"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Revenue Summary</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Payment Mode</th>
+                                <th>Total Collected</th>
+                                <th>Transaction Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-revenue"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        var pendingAppointmentsData = [];
+        var pendingBillsData = [];
+
+        function switchTab(tabId) {
+            var tabs = document.querySelectorAll('.tab-btn');
+            var sections = document.querySelectorAll('.portal-section');
+            tabs.forEach(function(btn) { btn.classList.remove('active'); });
+            sections.forEach(function(sec) { sec.classList.remove('active'); });
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'receptionist') {
+                loadDropdowns();
+            } else if (tabId === 'doctor') {
+                loadPendingAppointments();
+            } else if (tabId === 'billing') {
+                loadPendingBills();
+            } else if (tabId === 'reports') {
+                loadReports();
+            }
+        }
+
+        function showAlert(msg, isSuccess) {
+            var box = document.getElementById('alert-box');
+            box.textContent = msg;
+            box.className = 'alert ' + (isSuccess ? 'alert-success' : 'alert-error');
+            box.style.display = 'block';
+            setTimeout(function() {
+                box.style.display = 'none';
+            }, 4000);
+        }
+
+        function loadDropdowns() {
+            fetch('/api/patients')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var select = document.getElementById('appt-patient');
+                    select.innerHTML = '<option value="">Select Patient</option>';
+                    data.forEach(function(p) {
+                        select.innerHTML += '<option value="' + p.patient_id + '">' + p.name + ' (' + p.phone + ')</option>';
+                    });
+                });
+
+            fetch('/api/doctors')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var select = document.getElementById('appt-doctor');
+                    select.innerHTML = '<option value="">Select Doctor</option>';
+                    data.forEach(function(d) {
+                        select.innerHTML += '<option value="' + d.doctor_id + '">' + d.name + ' - ' + d.specialization + ' (₹' + d.consultation_fee + ')</option>';
+                    });
+                });
+        }
+
+        function registerPatient(e) {
+            e.preventDefault();
+            var data = {
+                name: document.getElementById('p-name').value,
+                gender: document.getElementById('p-gender').value,
+                dob: document.getElementById('p-dob').value,
+                phone: document.getElementById('p-phone').value,
+                email: document.getElementById('p-email').value,
+                blood_group: document.getElementById('p-blood').value,
+                address: document.getElementById('p-address').value
+            };
+            fetch('/api/patients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if(res.status === 'success') {
+                    showAlert('Patient registered successfully!', true);
+                    document.getElementById('patient-form').reset();
+                    loadDropdowns();
+                } else {
+                    showAlert('Error: ' + res.message, false);
+                }
+            });
+        }
+
+        function bookAppointment(e) {
+            e.preventDefault();
+            var data = {
+                patient_id: document.getElementById('appt-patient').value,
+                doctor_id: document.getElementById('appt-doctor').value,
+                appointment_date: document.getElementById('appt-date').value
+            };
+            fetch('/api/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if(res.status === 'success') {
+                    showAlert('Appointment booked successfully!', true);
+                    document.getElementById('appointment-form').reset();
+                } else {
+                    showAlert('Error: ' + res.message, false);
+                }
+            });
+        }
+
+        function loadPendingAppointments() {
+            fetch('/api/appointments')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    pendingAppointmentsData = data;
+                    var select = document.getElementById('doctor-appt-select');
+                    select.innerHTML = '<option value="">Select Pending Appointment</option>';
+                    data.forEach(function(a) {
+                        select.innerHTML += '<option value="' + a.appointment_id + '">Appt #' + a.appointment_id + ' - ' + a.patient_name + ' with ' + a.doctor_name + ' (' + a.appointment_date + ')</option>';
+                    });
+                });
+        }
+
+        function loadAppointmentDetails() {
+            var apptId = document.getElementById('doctor-appt-select').value;
+            var item = pendingAppointmentsData.find(function(a) { return a.appointment_id == apptId; });
+            if (item) {
+                document.getElementById('consult-fee-display').value = '₹' + item.consultation_fee;
+            } else {
+                document.getElementById('consult-fee-display').value = '';
+            }
+        }
+
+        function recordConsultation(e) {
+            e.preventDefault();
+            var apptId = document.getElementById('doctor-appt-select').value;
+            if (!apptId) {
+                showAlert('Please select an appointment first', false);
+                return;
+            }
+            var data = {
+                appointment_id: apptId,
+                diagnosis: document.getElementById('consult-diagnosis').value,
+                notes: document.getElementById('consult-notes').value,
+                follow_up_date: document.getElementById('consult-followup').value
+            };
+            fetch('/api/consultations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if(res.status === 'success') {
+                    showAlert('Consultation recorded & bill created successfully!', true);
+                    document.getElementById('consultation-form').reset();
+                    loadPendingAppointments();
+                } else {
+                    showAlert('Error: ' + res.message, false);
+                }
+            });
+        }
+
+        function loadPendingBills() {
+            fetch('/api/bills')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    pendingBillsData = data;
+                    var select = document.getElementById('bill-select');
+                    select.innerHTML = '<option value="">Select Pending Bill</option>';
+                    data.forEach(function(b) {
+                        select.innerHTML += '<option value="' + b.bill_id + '">Bill #' + b.bill_id + ' - ' + b.patient_name + ' (Due: ₹' + b.balance_due + ')</option>';
+                    });
+                });
+        }
+
+        function loadBillDetails() {
+            var billId = document.getElementById('bill-select').value;
+            var item = pendingBillsData.find(function(b) { return b.bill_id == billId; });
+            if (item) {
+                document.getElementById('bill-total').value = item.total_amount;
+                document.getElementById('bill-paid').value = item.paid_amount;
+                document.getElementById('bill-due').value = item.balance_due;
+                document.getElementById('pay-amount').value = item.balance_due;
+            } else {
+                document.getElementById('bill-total').value = '';
+                document.getElementById('bill-paid').value = '';
+                document.getElementById('bill-due').value = '';
+                document.getElementById('pay-amount').value = '';
+            }
+        }
+
+        function processPayment(e) {
+            e.preventDefault();
+            var billId = document.getElementById('bill-select').value;
+            if (!billId) {
+                showAlert('Please select a bill first', false);
+                return;
+            }
+            var data = {
+                bill_id: billId,
+                amount: document.getElementById('pay-amount').value,
+                payment_mode: document.getElementById('pay-mode').value
+            };
+            fetch('/api/payments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if(res.status === 'success') {
+                    showAlert('Payment recorded! New status: ' + res.new_status, true);
+                    document.getElementById('payment-form').reset();
+                    loadPendingBills();
+                } else {
+                    showAlert('Error: ' + res.message, false);
+                }
+            });
+        }
+
+        function loadReports() {
+            fetch('/api/reports/daily-appointments')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var tbody = document.getElementById('table-daily-appts');
+                    tbody.innerHTML = '';
+                    data.forEach(function(row) {
+                        tbody.innerHTML += '<tr><td>' + row.appointment_date + '</td><td>' + row.total_appointments + '</td><td>' + row.completed + '</td><td>' + row.pending + '</td></tr>';
+                    });
+                });
+
+            fetch('/api/reports/doctor-patients')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var tbody = document.getElementById('table-doctor-patients');
+                    tbody.innerHTML = '';
+                    data.forEach(function(row) {
+                        tbody.innerHTML += '<tr><td>' + row.doctor_name + '</td><td>' + row.specialization + '</td><td>' + row.total_patients + '</td></tr>';
+                    });
+                });
+
+            fetch('/api/reports/pending-bills')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var tbody = document.getElementById('table-pending-bills');
+                    tbody.innerHTML = '';
+                    data.forEach(function(row) {
+                        var badgeClass = row.status === 'Partial' ? 'badge-partial' : 'badge-pending';
+                        tbody.innerHTML += '<tr><td>#' + row.bill_id + '</td><td>' + row.patient_name + '</td><td>₹' + row.total_amount + '</td><td>₹' + row.paid_amount + '</td><td>₹' + row.amount_due + '</td><td><span class="badge ' + badgeClass + '">' + row.status + '</span></td></tr>';
+                    });
+                });
+
+            fetch('/api/reports/revenue')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var tbody = document.getElementById('table-revenue');
+                    tbody.innerHTML = '';
+                    data.forEach(function(row) {
+                        tbody.innerHTML += '<tr><td>' + row.payment_mode + '</td><td>₹' + row.total_collected + '</td><td>' + row.transaction_count + '</td></tr>';
+                    });
+                });
+        }
+
+        window.onload = function() {
+            loadDropdowns();
+        };
+    </script>
+</body>
+</html>
